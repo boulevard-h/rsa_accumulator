@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/boulevard-h/rsa_accumulator/accumulator"
 )
@@ -53,4 +54,31 @@ func main() {
 	} else {
 		fmt.Printf("New element %s proof verification failed!\n", newElement)
 	}
+
+	// 8. 测试放入1000个元素（不生成证明）
+	elements = make([]string, 1000)
+	for i := 0; i < 1000; i++ {
+		elements[i] = fmt.Sprintf("Element %d", i)
+	}
+	fmt.Println("Testing 1000 elements without proof...")
+	startingTime := time.Now().UTC()
+	acc, _ = accumulator.AccWithoutProve(elements, encodeType, setup)
+	endingTime := time.Now().UTC()
+	duration := endingTime.Sub(startingTime)
+	fmt.Printf("Running AccWithoutProve Takes [%.3f] Seconds \n", duration.Seconds())
+	fmt.Println("Initial accumulator value:\n", acc.String())
+
+	// 9. 测试放入100个元素（生成证明）
+	elements = make([]string, 100)
+	for i := 0; i < 100; i++ {
+		elements[i] = fmt.Sprintf("Element %d", i)
+	}
+	fmt.Println("Testing 100 elements with proof...")
+	startingTime = time.Now().UTC()
+	acc, _ = accumulator.AccAndProve(elements, encodeType, setup)
+	endingTime = time.Now().UTC()
+	duration = endingTime.Sub(startingTime)
+	fmt.Printf("Running AccAndProve Takes [%.3f] Seconds \n", duration.Seconds())
+	fmt.Println("Initial accumulator value:\n", acc.String())
+
 }

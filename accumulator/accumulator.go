@@ -2,9 +2,7 @@ package accumulator
 
 import (
 	"crypto/sha256"
-	"fmt"
 	"math/big"
-	"time"
 )
 
 // Setup 存储 RSA accumulator 的参数
@@ -47,16 +45,22 @@ func TrustedSetup() *Setup {
 
 // AccAndProve 生成代表数、计算各元素的 membership proof，并构造累加器
 func AccAndProve(set []string, encodeType EncodeType, setup *Setup) (*big.Int, []*big.Int) {
-	startingTime := time.Now().UTC()
 	reps := GenRepresentatives(set, encodeType)
-	endingTime := time.Now().UTC()
-	duration := endingTime.Sub(startingTime)
-	fmt.Printf("Running GenRepresentatives Takes [%.3f] Seconds \n", duration.Seconds())
-
 	proofs := ProveMembership(setup.G, setup.N, reps)
 	// 利用 proofs[0] 和其对应代表数构造累加器
 	acc := AccumulateNew(proofs[0], reps[0], setup.N)
 	return acc, proofs
+}
+
+// 不生成证明，只计算累加器
+func AccWithoutProve(set []string, encodeType EncodeType, setup *Setup) (*big.Int, []*big.Int) {
+	reps := GenRepresentatives(set, encodeType)
+	prod := big.NewInt(1)
+	for _, r := range reps {
+		prod.Mul(prod, r)
+	}
+	acc := AccumulateNew(setup.G, prod, setup.N)
+	return acc, reps
 }
 
 // AccumulateNew 计算 base^exp mod N
